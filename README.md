@@ -1,7 +1,5 @@
 # Social-Media-App
 
-# Django Social Network API
-
 This project is a Django-based API for a social network platform. It includes features for user registration, login, managing friend requests, and handling friendships.
 
 ### Prerequisites
