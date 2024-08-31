@@ -103,28 +103,26 @@ class AcceptFriendRequest(APIView):
 
     @csrf_exempt
     def post(self, request, format=None):
-
         request_id = request.data.get('request_id')
+        user = request.user
 
         if not request_id:
             return Response({"message": "Request ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        try :
-
-            friend_request = FriendRequest.objects.get(id=request_id, sender=request.user)
-            
+        try:
+            # Check if the logged-in user is the receiver of the friend request
+            friend_request = FriendRequest.objects.get(id=request_id, receiver=user)
         except FriendRequest.DoesNotExist:
-            return Response({"message": "Friend request does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "Friend request does not exist or is not for you"}, status=status.HTTP_404_NOT_FOUND)
 
-        accept_friend = Friendship.objects.create(
-            user1 = friend_request.sender, 
-            user2 = friend_request.receiver
+        # Create the friendship
+        Friendship.objects.create(
+            user1=friend_request.sender,
+            user2=friend_request.receiver
         )
 
-        accept_friend.save()
-        
-        if accept_friend:
-            friend_request.delete()
+        # Delete the friend request after acceptance
+        friend_request.delete()
 
         return Response({"message": "Friend request accepted"}, status=status.HTTP_200_OK)
 
@@ -135,19 +133,21 @@ class RejectFriendRequest(APIView):
     @csrf_exempt
     def post(self, request, format=None):
         request_id = request.data.get('request_id')
+        user = request.user
+
+        if not request_id:
+            return Response({"message": "Request ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            friend_request = FriendRequest.objects.get(
-                id = request_id,
-                sender = request.user
-            )
+            # Fetch the friend request where the logged-in user is the receiver
+            friend_request = FriendRequest.objects.get(id=request_id, receiver=user)
         except FriendRequest.DoesNotExist:
-            return Response({"message": "Friend request does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "Friend request does not exist or is not for you"}, status=status.HTTP_404_NOT_FOUND)
 
+        # Delete the friend request
         friend_request.delete()
 
-        return Response({
-            "message" : "Friend request rejected"}, status=status.HTTP_200_OK)
+        return Response({"message": "Friend request rejected"}, status=status.HTTP_200_OK)
 
 
 class ListFriends(generics.ListAPIView):
