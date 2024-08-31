@@ -1,3 +1,6 @@
+### API DOC LINK 
+https://documenter.getpostman.com/view/2176531/2sAXjKbsoG
+
 # Social-Media-App
 
 This project is a Django-based API for a social network platform. It includes features for user registration, login, managing friend requests, and handling friendships.
